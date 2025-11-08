@@ -100,14 +100,17 @@ elseif ($IsWindows) {
     return
   }
 
-  if ($result.Updates.Count -eq 0) {
+  $updateCollection = $result.Updates
+  $updateCount = [int]($updateCollection.Count)
+
+  if ($updateCount -eq 0) {
     Write-Info "No pending Windows Updates reported."
     return
   }
 
   $updates = @()
-  for ($i = 0; $i -lt $result.Updates.Count; $i++) {
-    $updates += $result.Updates.Item($i)
+  for ($i = 0; $i -lt $updateCount; $i++) {
+    $updates += $updateCollection.Item($i)
   }
 
   $critical = @($updates | Where-Object { $_.MsrcSeverity -eq "Critical" })

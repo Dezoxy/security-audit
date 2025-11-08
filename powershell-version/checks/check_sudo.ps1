@@ -75,11 +75,11 @@ Write-Section "Users & sudo"
 if ($IsWindows) {
   Write-Info "Windows host detected – reviewing local Administrators group."
   try {
-    $admins = Get-LocalGroupMember -Group "Administrators" -ErrorAction Stop
+    $admins = @(Get-LocalGroupMember -Group "Administrators" -ErrorAction Stop)
     foreach ($member in $admins) {
       Write-Info "Admin member: $($member.Name) (Type=$($member.ObjectClass), Source=$($member.PrincipalSource))"
     }
-    $localAdmins = $admins | Where-Object { $_.ObjectClass -eq "User" -and $_.PrincipalSource -eq "Local" }
+    $localAdmins = @($admins | Where-Object { $_.ObjectClass -eq "User" -and $_.PrincipalSource -eq "Local" })
     if ($localAdmins.Count -gt 3) {
       Write-Warn -Context $Context -Message "Large number of local accounts in Administrators group ($($localAdmins.Count)). Review necessity."
     }

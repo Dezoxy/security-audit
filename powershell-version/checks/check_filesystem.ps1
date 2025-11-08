@@ -36,7 +36,7 @@ if ($IsWindows) {
       $acl = Get-Acl -Path $Path -ErrorAction Stop
     }
     catch {
-      Write-Warn -Context $Context -Message "Unable to read ACL for $Path: $($_.Exception.Message)"
+      Write-Warn -Context $Context -Message "Unable to read ACL for ${Path}: $($_.Exception.Message)"
       return $false
     }
 
