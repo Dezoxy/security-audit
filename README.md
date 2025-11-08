@@ -1,6 +1,7 @@
 # Security Audit Orchestrator
 
-Lightweight Bash toolkit that strings together a handful of host security posture checks. The top-level `security_orchestrator.sh` script discovers each `checks/check_*.sh`, runs them in sequence, captures WARN/CRIT counters, and writes consolidated logs you can hand to an auditor or keep for drift reviews.
+Lightweight Bash toolkit that strings together a handful of host security posture checks. The top-level `security_orchestrator.sh` script discovers each `checks/check_*.sh`, runs them in sequence, captures WARN/CRIT counters, and writes consolidated logs you can hand to an auditor or keep for drift reviews.  
+Looking for other runtimes? See `python-version/` (pure Python) and `powershell-version/` (PowerShell 7+) for feature-parity ports with their own READMEs.
 
 ## What it checks
 
