@@ -62,18 +62,3 @@ LOG_DIR=/tmp/security-audit ./security_orchestrator.sh
 1. Drop a new executable `checks/check_<topic>.sh`.  
 2. Source `lib/common.sh`, call `reset_counts`, and use `section/info/warn/crit`.  
 3. Return `0/1/2` like the existing checks. The orchestrator will pick it up automatically.
-
-## Getting it onto GitHub
-
-Once you are happy with the content, the repository is ready for a first commit:
-
-```bash
-git status
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin git@github.com:<you>/security-audit.git
-git push -u origin main
-```
-
-Pick a license (MIT, Apache-2.0, etc.) before making the repo public if you plan to share it widely.
