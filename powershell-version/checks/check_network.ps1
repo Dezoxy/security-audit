@@ -33,7 +33,12 @@ if (Test-CommandAvailable -Name "ss") {
 }
 elseif (Test-CommandAvailable -Name "netstat") {
   $portCmd = "netstat"
-  $portArgs = @("-tulpen")
+  if ($IsWindows) {
+    $portArgs = @("-ano")
+  }
+  else {
+    $portArgs = @("-tulpen")
+  }
 }
 
 if ($portCmd) {
@@ -44,7 +49,7 @@ if ($portCmd) {
     }
   }
   catch {
-    Write-Warn -Context $Context -Message "Failed to list listening ports via $portCmd: $($_.Exception.Message)"
+    Write-Warn -Context $Context -Message "Failed to list listening ports via ${portCmd}: $($_.Exception.Message)"
   }
 }
 else {

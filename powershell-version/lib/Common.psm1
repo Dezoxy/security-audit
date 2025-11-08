@@ -18,8 +18,7 @@ function Initialize-Logger {
 
 function Write-LogLine {
   param(
-    [Parameter(Mandatory)]
-    [string]$Message,
+    [string]$Message = "",
     [ValidateSet("Gray","Cyan","Yellow","Red","Green","White","DarkGray")]
     [string]$Color = "Gray"
   )

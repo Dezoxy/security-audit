@@ -60,7 +60,7 @@ function Scan-SudoFile {
 
   $hits = $lines | Where-Object { $_ -match "^[^#].*NOPASSWD" }
   if ($hits) {
-    Write-Warn -Context $Context -Message "NOPASSWD entries in $Path:"
+    Write-Warn -Context $Context -Message "NOPASSWD entries in ${Path}:"
     foreach ($line in $hits) {
       Write-Info "  $line"
       if ($line -match "ALL\s*=\s*\(ALL\).*NOPASSWD:\s*ALL") {
@@ -72,7 +72,13 @@ function Scan-SudoFile {
 
 Write-Section "Users & sudo"
 
-$uidZero = Get-UidZeroAccounts
+$passwdPath = "/etc/passwd"
+if (-not (Test-Path $passwdPath)) {
+  Write-Info "No $passwdPath found; skipping Unix-specific sudo/users checks on this host."
+  return
+}
+
+$uidZero = @(Get-UidZeroAccounts)
 if ($uidZero.Count -gt 0) {
   Write-Info "UID 0 accounts: $($uidZero -join ' ')"
   if ($uidZero | Where-Object { $_ -ne "root" }) {
@@ -88,8 +94,9 @@ if ($null -eq $locked) {
   Write-Warn -Context $Context -Message "/etc/shadow not readable; password state checks incomplete."
 }
 else {
-  if ($locked.Count -gt 0) {
-    Write-Info "Locked/disabled accounts (shadow): $($locked -join ' ')"
+  $lockedList = @($locked)
+  if ($lockedList.Count -gt 0) {
+    Write-Info "Locked/disabled accounts (shadow): $($lockedList -join ' ')"
   }
   else {
     Write-Info "Locked/disabled accounts (shadow): (none)"

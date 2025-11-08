@@ -58,7 +58,7 @@ else {
   Write-Warn -Context $Context -Message "systemctl not available; cannot check journald/rsyslog status."
 }
 
-if (Test-CommandAvailable -Name "auditctl" -or Test-SystemctlStatus -Service "auditd") {
+if ((Test-CommandAvailable -Name "auditctl") -or (Test-SystemctlStatus -Service "auditd")) {
   Write-Info "auditd/audit subsystem appears present; review rules with 'auditctl -l'."
 }
 else {

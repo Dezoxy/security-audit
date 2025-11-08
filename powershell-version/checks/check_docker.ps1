@@ -48,7 +48,7 @@ if (Test-Path $dockerSock) {
     $mode = $item.Mode
     $owner = $acl.Owner
     $group = $acl.Group
-    Write-Info "docker.sock perms: $mode $owner:$group"
+    Write-Info "docker.sock perms: $mode ${owner}:${group}"
   }
   catch {
     Write-Warn -Context $Context -Message "Unable to read docker.sock permissions: $($_.Exception.Message)"
@@ -89,7 +89,7 @@ foreach ($line in $containers) {
     }
   }
   catch {
-    Write-Warn -Context $Context -Message "Failed to inspect container $name: $($_.Exception.Message)"
+    Write-Warn -Context $Context -Message "Failed to inspect container ${name}: $($_.Exception.Message)"
     continue
   }
 
