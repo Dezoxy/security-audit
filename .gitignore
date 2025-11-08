@@ -13,3 +13,5 @@ logs/
 __pycache__/
 *.py[cod]
 python-version/logs/
+powershell-version/logs/
+.venv/
