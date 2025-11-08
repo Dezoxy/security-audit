@@ -92,6 +92,24 @@ if (Test-CommandAvailable -Name "firewall-cmd") {
   return
 }
 
+if (Test-CommandAvailable -Name "Get-NetFirewallProfile") {
+  Write-Info "Windows Defender Firewall detected."
+  try {
+    $profiles = Get-NetFirewallProfile -ErrorAction Stop
+    foreach ($profile in $profiles) {
+      $status = if ($profile.Enabled) { "enabled" } else { "disabled" }
+      Write-Info "Profile $($profile.Name): $status (Inbound=$($profile.DefaultInboundAction), Outbound=$($profile.DefaultOutboundAction))"
+      if (-not $profile.Enabled) {
+        Write-Warn -Context $Context -Message "Firewall profile $($profile.Name) is disabled."
+      }
+    }
+  }
+  catch {
+    Write-Warn -Context $Context -Message "Failed to query Windows Defender Firewall: $($_.Exception.Message)"
+  }
+  return
+}
+
 if (Test-CommandAvailable -Name "iptables") {
   Write-Warn -Context $Context -Message "No ufw/firewalld detected, but iptables exists. Showing top of rules:"
   try {
