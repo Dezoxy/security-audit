@@ -72,6 +72,34 @@ function Scan-SudoFile {
 
 Write-Section "Users & sudo"
 
+if ($IsWindows) {
+  Write-Info "Windows host detected – reviewing local Administrators group."
+  try {
+    $admins = Get-LocalGroupMember -Group "Administrators" -ErrorAction Stop
+    foreach ($member in $admins) {
+      Write-Info "Admin member: $($member.Name) (Type=$($member.ObjectClass), Source=$($member.PrincipalSource))"
+    }
+    $localAdmins = $admins | Where-Object { $_.ObjectClass -eq "User" -and $_.PrincipalSource -eq "Local" }
+    if ($localAdmins.Count -gt 3) {
+      Write-Warn -Context $Context -Message "Large number of local accounts in Administrators group ($($localAdmins.Count)). Review necessity."
+    }
+  }
+  catch {
+    Write-Warn -Context $Context -Message "Unable to enumerate Administrators group: $($_.Exception.Message)"
+  }
+
+  try {
+    $builtIn = Get-LocalUser -Name "Administrator" -ErrorAction Stop
+    if ($builtIn.Enabled) {
+      Write-Warn -Context $Context -Message "Built-in Administrator account is enabled."
+    }
+  }
+  catch {
+    Write-Info "Built-in Administrator account not found."
+  }
+  return
+}
+
 $passwdPath = "/etc/passwd"
 if (-not (Test-Path $passwdPath)) {
   Write-Info "No $passwdPath found; skipping Unix-specific sudo/users checks on this host."

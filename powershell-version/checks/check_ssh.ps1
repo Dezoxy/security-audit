@@ -31,15 +31,42 @@ function Get-SshConfigValue {
   return $value
 }
 
-$configPath = "/etc/ssh/sshd_config"
 Write-Section "SSH configuration"
 
-if (-not (Test-Path $configPath)) {
-  Write-Info "No $configPath found (sshd may not be running on this host)."
-  return
-}
+if ($IsWindows) {
+  $service = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
+  if ($service) {
+    Write-Info "sshd service status: $($service.Status)"
+    if ($service.Status -ne "Running") {
+      Write-Warn -Context $Context -Message "OpenSSH service installed but not running."
+    }
+  }
+  else {
+    Write-Info "OpenSSH server service not installed."
+  }
 
-Write-Info "Evaluating $configPath"
+  $winConfigCandidates = @(
+    "$env:ProgramData\ssh\sshd_config",
+    "C:\Windows\System32\OpenSSH\sshd_config",
+    "$env:ProgramFiles\OpenSSH\etc\sshd_config"
+  )
+  $configPath = $winConfigCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+
+  if (-not $configPath) {
+    Write-Info "No Windows sshd_config found; skipping SSH config checks."
+    return
+  }
+
+  Write-Info "Evaluating $configPath"
+}
+else {
+  $configPath = "/etc/ssh/sshd_config"
+  if (-not (Test-Path $configPath)) {
+    Write-Info "No $configPath found (sshd may not be running on this host)."
+    return
+  }
+  Write-Info "Evaluating $configPath"
+}
 
 $permitRoot = Get-SshConfigValue -Path $configPath -Key "PermitRootLogin"
 $passwordAuth = Get-SshConfigValue -Path $configPath -Key "PasswordAuthentication"

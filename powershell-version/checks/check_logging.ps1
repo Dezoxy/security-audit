@@ -37,6 +37,66 @@ function Test-SystemctlStatus {
 
 Write-Section "Logging & audit"
 
+if ($IsWindows) {
+  try {
+    $eventLogSvc = Get-Service -Name "eventlog" -ErrorAction Stop
+    if ($eventLogSvc.Status -eq "Running") {
+      Write-Info "Windows Event Log service is running."
+    }
+    else {
+      Write-Warn -Context $Context -Message "Windows Event Log service status: $($eventLogSvc.Status)"
+    }
+  }
+  catch {
+    Write-Warn -Context $Context -Message "Unable to query Windows Event Log service: $($_.Exception.Message)"
+  }
+
+  try {
+    $collector = Get-Service -Name "Wecsvc" -ErrorAction Stop
+    Write-Info "Windows Event Collector service status: $($collector.Status)"
+  }
+  catch {
+    Write-Info "Windows Event Collector service not installed."
+  }
+
+  try {
+    $coreLogs = Get-WinEvent -ListLog @("Application","Security","System") -ErrorAction Stop
+    foreach ($log in $coreLogs) {
+      $state = if ($log.IsEnabled) { "enabled" } else { "disabled" }
+      Write-Info "Log $($log.LogName): $state, Retention=$($log.LogMode)"
+      if (-not $log.IsEnabled) {
+        Write-Warn -Context $Context -Message "Windows event log $($log.LogName) is disabled."
+      }
+    }
+  }
+  catch {
+    Write-Warn -Context $Context -Message "Failed to query core Windows event logs: $($_.Exception.Message)"
+  }
+
+  if (Test-CommandAvailable -Name "auditpol") {
+    try {
+      $auditOutput = & auditpol /get /category:* 2>$null
+      $noAuditLines = $auditOutput | Where-Object { $_ -match "No Auditing" }
+      if ($noAuditLines) {
+        Write-Warn -Context $Context -Message "Audit categories without coverage detected:"
+        foreach ($line in $noAuditLines) {
+          Write-Info "  $line"
+        }
+      }
+      else {
+        Write-Info "Auditpol reports categories configured."
+      }
+    }
+    catch {
+      Write-Warn -Context $Context -Message "Failed to run auditpol: $($_.Exception.Message)"
+    }
+  }
+  else {
+    Write-Warn -Context $Context -Message "auditpol not available; cannot inspect Windows audit policy."
+  }
+  return
+}
+
 if (Test-CommandAvailable -Name "systemctl") {
   $journald = Test-SystemctlActive -Service "systemd-journald"
   if ($journald) {
