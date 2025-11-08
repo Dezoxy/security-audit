@@ -8,3 +8,8 @@ logs/
 # Editor swap/backup files
 *~
 *.swp
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+python-version/logs/
