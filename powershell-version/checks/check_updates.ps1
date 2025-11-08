@@ -88,6 +88,44 @@ elseif (Test-CommandAvailable -Name "yum") {
   Write-Info "Detected yum-based system."
   Write-Warn -Context $Context -Message "Please review 'yum check-update' output manually for pending updates."
 }
+elseif ($IsWindows) {
+  Write-Info "Detected Windows Update Agent."
+  try {
+    $session = New-Object -ComObject Microsoft.Update.Session
+    $searcher = $session.CreateUpdateSearcher()
+    $result = $searcher.Search("IsInstalled=0 AND IsHidden=0")
+  }
+  catch {
+    Write-Warn -Context $Context -Message "Failed to query Windows Update Agent: $($_.Exception.Message)"
+    return
+  }
+
+  if ($result.Updates.Count -eq 0) {
+    Write-Info "No pending Windows Updates reported."
+    return
+  }
+
+  $updates = @()
+  for ($i = 0; $i -lt $result.Updates.Count; $i++) {
+    $updates += $result.Updates.Item($i)
+  }
+
+  $critical = @($updates | Where-Object { $_.MsrcSeverity -eq "Critical" })
+  if ($critical.Count -gt 0) {
+    Write-Crit -Context $Context -Message "Critical Windows Updates pending:"
+    foreach ($update in ($critical | Select-Object -First 10)) {
+      Write-Info "  $($update.Title)"
+    }
+  }
+
+  $remaining = @($updates | Where-Object { $_.MsrcSeverity -ne "Critical" })
+  if ($remaining.Count -gt 0 -and $critical.Count -eq 0) {
+    Write-Warn -Context $Context -Message "Windows Updates pending (none flagged Critical):"
+    foreach ($update in ($remaining | Select-Object -First 10)) {
+      Write-Info "  $($update.Title)"
+    }
+  }
+}
 else {
   Write-Warn -Context $Context -Message "Unknown/no package manager detected; cannot assess updates."
 }
