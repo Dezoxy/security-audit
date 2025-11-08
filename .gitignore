@@ -1,0 +1,10 @@
+# macOS filesystem cruft
+.DS_Store
+
+# Runtime output
+logs/
+*.log
+
+# Editor swap/backup files
+*~
+*.swp
